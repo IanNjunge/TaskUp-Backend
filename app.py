@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from flask_cors import CPRS
+from flask_cors import CORS
 from models import db, User, Goal, Category
 from flask_cors import CORS
 
@@ -100,6 +100,21 @@ def create_category():
     db.session.add(new_category)
     db.session.commit()
     return jsonify(new_category.to_dict()), 201
+
+@app.route("/seed", methods=["POST"])
+def seed_data():
+    # check if user already exists
+    existing_user = User.query.filter_by(username="defaultuser").first()
+    if existing_user:
+        return jsonify({"message": "Default user already exists", "user": existing_user.to_dict()})
+
+    # create a default user
+    user = User(username="defaultuser", email="default@example.com", password_digest="12345")
+    db.session.add(user)
+    db.session.commit()
+
+    return jsonify({"message": "Seeded default user", "user": user.to_dict()})
+
 
 
 if __name__ == "__main__":
