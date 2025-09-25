@@ -54,7 +54,7 @@ def create_goal():
         status=data.get("status", "pending"),
         deadline=data.get("deadline"),
         priority=data.get("priority"),
-        user_id=data["user_id"]  # must pass a user_id
+        user_id=1 #default user
     )
     db.session.add(new_goal)
     db.session.commit()
