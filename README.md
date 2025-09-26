@@ -1,2 +1,2 @@
 # TaskUp-Backend
-Backend for TaskUp project
+Backend for TaskUp fullstack project
