@@ -36,3 +36,5 @@ def seed_db():
 
         print("Database seeded with default user and goals!")
     session.close()
+
+seed_db()
