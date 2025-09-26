@@ -7,7 +7,7 @@ goal_category = db.Table(
     "goal_category",
     db.Column("goal_id", db.Integer, db.ForeignKey("goals.id"), primary_key=True),
     db.Column("category_id", db.Integer, db.ForeignKey("categories.id"), primary_key=True),
-    db.Column("notes", db.String(200))  # extra attribute
+    db.Column("notes", db.String(200))  
 )
 
 class User(db.Model):
@@ -25,7 +25,6 @@ class User(db.Model):
             "id": self.id,
             "username": self.username,
             "email": self.email,
-            # don't return password_digest for security
             "goals": [goal.id for goal in self.goals]
         }
 
