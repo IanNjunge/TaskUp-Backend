@@ -5,7 +5,8 @@ from flask_migrate import Migrate
 from flask_restful import Api
 from flask_cors import CORS
 from models import db, User, Goal, Category
-
+from database import Base, engine, SessionLocal
+from seed import seed_db
 
 app = Flask(__name__)
 CORS(app)   
@@ -126,7 +127,7 @@ def seed_data():
 
     return jsonify({"message": "Seeded default user", "user": user.to_dict()})
 
-
+seed_db()
 
 if __name__ == "__main__":
     with app.app_context():
