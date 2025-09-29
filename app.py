@@ -70,17 +70,26 @@ def create_goal():
     db.session.commit()
     return jsonify(new_goal.to_dict()), 201
 
-@app.route("/goals/<int:id>", methods=["PUT"])
+@app.route("/goals/<int:id>", methods=["PUT", "PATCH"])
 def update_goal(id):
     goal = Goal.query.get_or_404(id)
     data = request.json
-    goal.title = data.get("title", goal.title)
-    goal.description = data.get("description", goal.description)
-    goal.status = data.get("status", goal.status)
-    goal.deadline = data.get("deadline", goal.deadline)
-    goal.priority = data.get("priority", goal.priority)
+
+    # Update only fields that exist in request
+    if "title" in data:
+        goal.title = data["title"]
+    if "description" in data:
+        goal.description = data["description"]
+    if "status" in data:
+        goal.status = data["status"]
+    if "deadline" in data:
+        goal.deadline = data["deadline"]
+    if "priority" in data:
+        goal.priority = data["priority"]
+
     db.session.commit()
     return jsonify(goal.to_dict())
+
 
 @app.route("/goals/<int:id>", methods=["DELETE"])
 def delete_goal(id):
