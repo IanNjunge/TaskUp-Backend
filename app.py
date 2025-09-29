@@ -111,12 +111,12 @@ def create_category():
     db.session.commit()
     return jsonify(new_category.to_dict()), 201
 
-@app.before_first_request
-def seed_if_empty():
-    if not User.query.first():
-        default_user = User(username="defaultuser", email="default@example.com")
-        db.session.add(default_user)
-        db.session.commit()
+
+@app.route("/seed", methods=["POST"])
+def run_seed():
+    from seed import seed_db
+    seed_db()
+    return {"message": "Database seeded!"}, 200
 
 
 
