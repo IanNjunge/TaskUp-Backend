@@ -8,5 +8,4 @@ venv/
 # Database
 app.db
 
-# Migrations cache
-migrations/
+
