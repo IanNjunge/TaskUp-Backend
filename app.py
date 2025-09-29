@@ -111,6 +111,14 @@ def create_category():
     db.session.commit()
     return jsonify(new_category.to_dict()), 201
 
+@app.before_first_request
+def seed_if_empty():
+    if not User.query.first():
+        default_user = User(username="defaultuser", email="default@example.com")
+        db.session.add(default_user)
+        db.session.commit()
+
+
 
 if __name__ == "__main__":
     with app.app_context():
