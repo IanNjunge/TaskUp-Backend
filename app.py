@@ -5,13 +5,11 @@ from flask_migrate import Migrate
 from flask_restful import Api
 from flask_cors import CORS
 from models import db, User, Goal, Category
-from database import Base, engine, SessionLocal
-from seed import seed_db
 
 app = Flask(__name__)
-CORS(app)   
+CORS(app)
 
-# Database config for Render
+
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URI", "sqlite:///dev.db")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
@@ -23,6 +21,7 @@ api = Api(app)
 def index():
     return "Welcome to the TaskUp API!"
 
+#USERS 
 @app.route("/users", methods=["GET"])
 def get_users():
     users = User.query.all()
@@ -39,14 +38,13 @@ def create_user():
     new_user = User(
         username=data["username"],
         email=data["email"],
-        
+        password_digest=data.get("password_digest", "12345") 
     )
     db.session.add(new_user)
     db.session.commit()
     return jsonify(new_user.to_dict()), 201
 
-
-# Goals
+# GOALS 
 @app.route("/goals", methods=["GET"])
 def get_goals():
     goals = Goal.query.all()
@@ -66,7 +64,7 @@ def create_goal():
         status=data.get("status", "pending"),
         deadline=data.get("deadline"),
         priority=data.get("priority"),
-        user_id=1 #default user
+        user_id=1  # default user
     )
     db.session.add(new_goal)
     db.session.commit()
@@ -91,7 +89,7 @@ def delete_goal(id):
     db.session.commit()
     return "", 204
 
-# Categories
+# CATEGORIES 
 @app.route("/categories", methods=["GET"])
 def get_categories():
     categories = Category.query.all()
@@ -113,23 +111,8 @@ def create_category():
     db.session.commit()
     return jsonify(new_category.to_dict()), 201
 
-@app.route("/seed", methods=["POST"])
-def seed_data():
-    # check if user already exists
-    existing_user = User.query.filter_by(username="defaultuser").first()
-    if existing_user:
-        return jsonify({"message": "Default user already exists", "user": existing_user.to_dict()})
-
-    # create a default user
-    user = User(username="defaultuser", email="default@example.com", password_digest="12345")
-    db.session.add(user)
-    db.session.commit()
-
-    return jsonify({"message": "Seeded default user", "user": user.to_dict()})
-
-
 
 if __name__ == "__main__":
     with app.app_context():
-        db.create_all()
+        db.create_all()  
     app.run(debug=True)
