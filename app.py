@@ -5,23 +5,28 @@ from flask_migrate import Migrate
 from flask_restful import Api
 from flask_cors import CORS
 from models import db, User, Goal, Category
+from seed import seed_db
 
 app = Flask(__name__)
 CORS(app)
 
 
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URI", "sqlite:///dev.db")
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
+    "DATABASE_URI", "sqlite:///dev.db"
+)
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db.init_app(app)
 migrate = Migrate(app, db)
 api = Api(app)
 
+# ROUTES
+
 @app.route("/")
 def index():
     return "Welcome to the TaskUp API!"
 
-#USERS 
+# USERS
 @app.route("/users", methods=["GET"])
 def get_users():
     users = User.query.all()
@@ -38,13 +43,13 @@ def create_user():
     new_user = User(
         username=data["username"],
         email=data["email"],
-        password_digest=data.get("password_digest", "12345") 
+        password_digest=data.get("password_digest", "12345")
     )
     db.session.add(new_user)
     db.session.commit()
     return jsonify(new_user.to_dict()), 201
 
-# GOALS 
+# GOALS
 @app.route("/goals", methods=["GET"])
 def get_goals():
     goals = Goal.query.all()
@@ -64,32 +69,23 @@ def create_goal():
         status=data.get("status", "pending"),
         deadline=data.get("deadline"),
         priority=data.get("priority"),
-        user_id=1  # default user
+        user_id=data.get("user_id", 1)  # default user
     )
     db.session.add(new_goal)
     db.session.commit()
     return jsonify(new_goal.to_dict()), 201
 
-@app.route("/goals/<int:id>", methods=["PUT", "PATCH"])
+@app.route("/goals/<int:id>", methods=["PUT"])
 def update_goal(id):
     goal = Goal.query.get_or_404(id)
     data = request.json
-
-    # Update only fields that exist in request
-    if "title" in data:
-        goal.title = data["title"]
-    if "description" in data:
-        goal.description = data["description"]
-    if "status" in data:
-        goal.status = data["status"]
-    if "deadline" in data:
-        goal.deadline = data["deadline"]
-    if "priority" in data:
-        goal.priority = data["priority"]
-
+    goal.title = data.get("title", goal.title)
+    goal.description = data.get("description", goal.description)
+    goal.status = data.get("status", goal.status)
+    goal.deadline = data.get("deadline", goal.deadline)
+    goal.priority = data.get("priority", goal.priority)
     db.session.commit()
     return jsonify(goal.to_dict())
-
 
 @app.route("/goals/<int:id>", methods=["DELETE"])
 def delete_goal(id):
@@ -98,7 +94,7 @@ def delete_goal(id):
     db.session.commit()
     return "", 204
 
-# CATEGORIES 
+# CATEGORIES
 @app.route("/categories", methods=["GET"])
 def get_categories():
     categories = Category.query.all()
@@ -120,18 +116,22 @@ def create_category():
     db.session.commit()
     return jsonify(new_category.to_dict()), 201
 
+#SEED 
 
+# Auto-seed on first request if empty
+@app.before_first_request
+def auto_seed_if_empty():
+    if not User.query.first():
+        seed_db()
+
+# Manual seeding route
 @app.route("/seed", methods=["POST"])
 def run_seed():
-    from seed import seed_db
     seed_db()
     return {"message": "Database seeded!"}, 200
 
-
-
+#APP START 
 if __name__ == "__main__":
     with app.app_context():
-        db.create_all()  
-        from seed import seed_db
-        seed_db()
+        db.create_all()  # Create tables if they don’t exist
     app.run(debug=True)
