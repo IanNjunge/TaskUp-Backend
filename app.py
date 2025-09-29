@@ -117,13 +117,6 @@ def create_category():
     return jsonify(new_category.to_dict()), 201
 
 #SEED 
-
-# Auto-seed on first request if empty
-@app.before_first_request
-def auto_seed_if_empty():
-    if not User.query.first():
-        seed_db()
-
 # Manual seeding route
 @app.route("/seed", methods=["POST"])
 def run_seed():
