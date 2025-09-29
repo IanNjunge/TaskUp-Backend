@@ -132,4 +132,6 @@ def run_seed():
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()  
+        from seed import seed_db
+        seed_db()
     app.run(debug=True)
